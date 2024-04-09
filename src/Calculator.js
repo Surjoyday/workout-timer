@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -6,8 +6,23 @@ function Calculator({ workouts, allowSound }) {
   const [sets, setSets] = useState(3);
   const [speed, setSpeed] = useState(90);
   const [durationBreak, setDurationBreak] = useState(5);
+  const [duration, setDuration] = useState(0);
 
-  const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
+  // (number * sets) gives total number of repetation to be done for each exercise
+  // (number * sets * speed) gives how many repetation are performed each minute.
+  // (number * sets * speed) / 60 gives total time (min) spent performing the exercises.
+  // (sets - 1) gives the total number of breaks, eg, 3 sets means we need 2 breaks
+  // (sets - 1) * durationBreak gives total time spent on break
+
+  // const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
+
+  useEffect(
+    function () {
+      setDuration((number * sets * speed) / 60 + (sets - 1) * durationBreak);
+    },
+    [number, sets, speed, durationBreak]
+  );
+
   const mins = Math.floor(duration);
   const seconds = (duration - mins) * 60;
 
@@ -16,6 +31,16 @@ function Calculator({ workouts, allowSound }) {
     const sound = new Audio(clickSound);
     sound.play();
   };
+
+  function handleDurationInc() {
+    setDuration((duration) => Math.floor(duration) + 1);
+    // setDuration((duration) => duration + 1);
+  }
+
+  function handleDurationDec() {
+    setDuration((duration) => (duration > 1 ? Math.ceil(duration) - 1 : 0));
+    // setDuration((duration) => duration - 1);
+  }
 
   return (
     <>
@@ -73,13 +98,13 @@ function Calculator({ workouts, allowSound }) {
         </div>
       </form>
       <section>
-        <button onClick={() => {}}>–</button>
+        <button onClick={handleDurationDec}>–</button>
         <p>
           {mins < 10 && "0"}
           {mins}:{seconds < 10 && "0"}
           {seconds}
         </p>
-        <button onClick={() => {}}>+</button>
+        <button onClick={handleDurationInc}>+</button>
       </section>
     </>
   );
